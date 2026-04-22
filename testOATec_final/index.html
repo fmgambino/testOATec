@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OATec ITBA 2026 · Simulador y Ranking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">OATec</div>
+      <div class="brand-copy">
+        <h1>Instituto San Miguel</h1>
+        <p>Simulador, ranking y panel administrador · OATec ITBA 2026</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="goHomeBtn" class="ghost-btn" type="button">Inicio</button>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Cambiar tema">
+        <span>☀</span><span>☾</span>
+      </button>
+      <button id="openAdminBtn" class="primary-btn" type="button">Área admin</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section id="homeView" class="view active">
+      <section class="hero card hero-grid">
+        <div>
+          <span class="pill">Acceso alumnos</span>
+          <h2>Entrenamiento y ranking para los tests OATec</h2>
+          <p class="muted">
+            Elegí un test, completá tus datos, resolvé las preguntas y registrá el resultado.
+            El ranking se ordena por puntaje, porcentaje y menor tiempo.
+          </p>
+          <div class="hero-actions">
+            <button id="startSelectedTestBtn" class="primary-btn" type="button">Comenzar test</button>
+            <button id="showRankingBtn" class="secondary-btn" type="button">Ver ranking</button>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <article class="mini-card"><span>Tests activos</span><strong id="activeTestsCount">0</strong></article>
+          <article class="mini-card"><span>Participaciones</span><strong id="attemptsCount">0</strong></article>
+          <article class="mini-card"><span>Mejor puntaje</span><strong id="bestScoreLabel">0%</strong></article>
+        </div>
+      </section>
+
+      <section class="grid two-col">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <span class="pill">Paso 1</span>
+              <h3>Seleccionar test</h3>
+            </div>
+          </div>
+          <div class="card-body stack-md">
+            <div class="field">
+              <label for="testSelect">Test disponible</label>
+              <div class="select-wrap">
+                <select id="testSelect"></select>
+              </div>
+            </div>
+            <div id="selectedTestSummary" class="info-box test-summary-card"></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <span class="pill">Paso 2</span>
+              <h3>Datos del participante</h3>
+            </div>
+          </div>
+          <form id="participantForm" class="form-grid compact-grid card-body">
+            <div class="field"><label>Nombre</label><input id="firstName" required /></div>
+            <div class="field"><label>Apellido</label><input id="lastName" required /></div>
+            <div class="field"><label>DNI</label><input id="dni" required /></div>
+            <div class="field"><label>Edad</label><input id="age" type="number" min="8" max="25" required /></div>
+            <div class="field"><label>Curso</label><input id="course" required /></div>
+            <div class="field"><label>División</label><input id="division" required /></div>
+          </form>
+        </article>
+      </section>
+
+      <section id="rankingPreviewCard" class="card">
+        <div class="section-head row-between">
+          <div>
+            <span class="pill">Ranking</span>
+            <h3>Top 10 del test seleccionado</h3>
+          </div>
+          <button id="refreshRankingBtn" class="ghost-btn" type="button">Actualizar</button>
+        </div>
+        <div class="table-wrap card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Alumno</th>
+                <th>Curso</th>
+                <th>Puntaje</th>
+                <th>%</th>
+                <th>Tiempo</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="rankingPreviewBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="examView" class="view">
+      <section class="card exam-header">
+        <div>
+          <span class="pill">Test en curso</span>
+          <h2 id="examTitle">Resolviendo test</h2>
+          <p id="examDescription" class="muted"></p>
+        </div>
+        <div class="stats-inline">
+          <div class="mini-card"><span>Tiempo</span><strong id="timerLabel">00:00</strong><small id="timerModeLabel" class="muted">Cronómetro</small></div>
+          <div class="mini-card"><span>Respondidas</span><strong id="answeredLabel">0</strong></div>
+          <div class="mini-card"><span>Correctas</span><strong id="correctLabel">0</strong></div>
+        </div>
+      </section>
+
+      <section id="questionsContainer" class="questions-stack"></section>
+
+      <section class="card action-row card-body">
+        <button id="finishTestBtn" class="primary-btn" type="button">Finalizar y guardar</button>
+        <button id="cancelTestBtn" class="secondary-btn" type="button">Cancelar</button>
+      </section>
+    </section>
+
+    <section id="resultView" class="view">
+      <section class="card result-card">
+        <span class="pill">Resultado registrado</span>
+        <h2>Desempeño del participante</h2>
+        <div id="resultSummary" class="result-grid"></div>
+        <div class="hero-actions">
+          <button id="newAttemptBtn" class="primary-btn" type="button">Nuevo intento</button>
+          <button id="backToRankingBtn" class="secondary-btn" type="button">Ver ranking</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="adminView" class="view">
+      <section class="card admin-hero">
+        <div>
+          <span class="pill">Administrador autenticado</span>
+          <h2>Gestión de tests y ranking</h2>
+          <p class="muted">Podés crear tests, importar desde TXT, descargar un TXT modelo, revisar intentos, exportar CSV y administrar el ranking general.</p>
+        </div>
+        <div class="hero-actions">
+          <button id="adminRefreshBtn" class="ghost-btn" type="button">Actualizar</button>
+          <button id="exportAttemptsBtn" class="secondary-btn" type="button">Exportar CSV</button>
+          <button id="adminLogoutBtn" class="danger-btn" type="button">Cerrar sesión</button>
+        </div>
+      </section>
+
+      <section class="stats-grid four">
+        <article class="card stat"><span>Total tests</span><strong id="adminTestsCount">0</strong></article>
+        <article class="card stat"><span>Preguntas</span><strong id="adminQuestionsCount">0</strong></article>
+        <article class="card stat"><span>Intentos</span><strong id="adminAttemptsCount">0</strong></article>
+        <article class="card stat"><span>Promedio</span><strong id="adminAverageLabel">0%</strong></article>
+      </section>
+
+      <section class="grid admin-grid">
+        <article class="card">
+          <div class="section-head"><div><span class="pill">Nuevo test</span><h3>Crear test</h3></div></div>
+          <form id="createTestForm" class="form-grid card-body">
+            <div class="field full"><label>Título</label><input id="testTitle" required /></div>
+            <div class="field full"><label>Descripción</label><textarea id="testDescription" rows="3"></textarea></div>
+            <div class="field"><label>Área</label><input id="testArea" placeholder="Física, lógica, ambiente..." /></div>
+            <div class="field"><label>Duración (min.)</label><input id="testTimeLimit" type="number" min="1" value="25" required /></div>
+            <div class="field">
+              <label>Tipo de cronómetro</label>
+              <div class="select-wrap">
+                <select id="testTimerMode">
+                  <option value="desc">Descendente</option>
+                  <option value="asc">Ascendente</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Activo</label>
+              <div class="select-wrap">
+                <select id="testActive"><option value="true">Sí</option><option value="false">No</option></select>
+              </div>
+            </div>
+
+            <div class="field full">
+              <div class="row-between inner-row">
+                <label for="txtImportInput">Importar preguntas desde TXT</label>
+                <div class="hero-actions tight-actions">
+                  <button id="downloadTxtExampleBtn" class="ghost-btn" type="button">Descargar ejemplo TXT</button>
+                </div>
+              </div>
+              <input id="txtImportInput" type="file" accept=".txt,text/plain" />
+              <p class="muted small no-margin">El TXT puede incluir metadatos del test y el listado completo de preguntas. Al importarlo, se completará el formulario automáticamente.</p>
+            </div>
+
+            <div class="field full"><label>Preguntas (JSON)</label><textarea id="questionsJson" rows="12" placeholder='[
+  {
+    "prompt": "¿Cuál es la capital de Argentina?",
+    "option_a": "Buenos Aires",
+    "option_b": "Córdoba",
+    "option_c": "Rosario",
+    "option_d": "Mendoza",
+    "correct_option": "A",
+    "explanation": "Buenos Aires es la capital."
+  }
+]'></textarea></div>
+            <button class="primary-btn" type="submit">Guardar test</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="section-head row-between">
+            <div><span class="pill">Tests</span><h3>Listado</h3></div>
+            <span id="adminStatusNote" class="muted small"></span>
+          </div>
+          <div class="table-wrap fixed-table card-body">
+            <table>
+              <thead><tr><th>Título</th><th>Área</th><th>Preguntas</th><th>Timer</th><th>Activo</th><th></th></tr></thead>
+              <tbody id="adminTestsBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid admin-grid">
+        <article class="card">
+          <div class="section-head row-between section-head-stack-mobile">
+            <div><span class="pill">Ranking</span><h3>Resultados por test</h3></div>
+            <div class="select-wrap select-inline">
+              <select id="adminRankingTestSelect"></select>
+            </div>
+          </div>
+          <div class="table-wrap fixed-table card-body">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Alumno</th><th>Curso</th><th>Puntaje</th><th>%</th><th>Tiempo</th><th>Fecha</th></tr>
+              </thead>
+              <tbody id="adminRankingBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-head"><div><span class="pill">Intentos</span><h3>Gestión</h3></div></div>
+          <div class="table-wrap fixed-table card-body">
+            <table>
+              <thead>
+                <tr><th>Fecha</th><th>Alumno</th><th>Test</th><th>Puntaje</th><th>%</th><th></th></tr>
+              </thead>
+              <tbody id="adminAttemptsBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <div id="adminLoginOverlay" class="overlay hidden">
+    <div class="modal card modal-sm">
+      <span class="pill">Acceso seguro</span>
+      <h3>Ingresar al panel</h3>
+      <p class="muted">Usá el usuario <strong>admin</strong> y la contraseña configurada para el área administradora.</p>
+      <form id="adminLoginForm" class="form-grid compact-grid">
+        <div class="field full"><label>Usuario</label><input id="adminUser" required /></div>
+        <div class="field full"><label>Contraseña</label><input id="adminPass" type="password" required /></div>
+        <div class="modal-actions">
+          <button id="closeAdminLoginBtn" class="secondary-btn" type="button">Cancelar</button>
+          <button class="primary-btn" type="submit">Ingresar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="db/config.example.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
