@@ -1,10 +1,15 @@
 const APP_CONFIG = window.SUPERDB_CONFIG || {};
 const ADMIN_USER = APP_CONFIG.adminUsername || "admin";
 const ADMIN_EMAIL = APP_CONFIG.adminEmail || "admin@oatec.local";
-const SUPABASE_ENABLED =
-  APP_CONFIG.mode === "superdb" &&
+const CONFIG_WANTS_SUPABASE = APP_CONFIG.mode === "superdb";
+const HAS_VALID_SUPABASE_KEYS =
   !!APP_CONFIG.url &&
   !!APP_CONFIG.anonKey &&
+  !String(APP_CONFIG.url).includes("TU-PROYECTO") &&
+  !String(APP_CONFIG.anonKey).includes("TU_ANON_KEY");
+const SUPABASE_ENABLED =
+  CONFIG_WANTS_SUPABASE &&
+  HAS_VALID_SUPABASE_KEYS &&
   !!window.supabase;
 const supabaseClient = SUPABASE_ENABLED
   ? window.supabase.createClient(APP_CONFIG.url, APP_CONFIG.anonKey, {
@@ -228,6 +233,9 @@ function getAdminStatusText() {
     }
     return "SuperBase conectado · sesión pública";
   }
+  if (CONFIG_WANTS_SUPABASE) {
+    return "SuperBase sin configurar · completá db/config.js";
+  }
   return "Modo local";
 }
 
@@ -257,12 +265,12 @@ function setupRealtime() {
 }
 
 async function loginAdminWithSupabase(username, password) {
+  if (CONFIG_WANTS_SUPABASE && !supabaseClient) {
+    throw new Error("Falta configurar db/config.js con la URL y la anon key de Supabase.");
+  }
+
   if (!supabaseClient) {
-    state.adminAuthenticated = username === ADMIN_USER && password === "Admin0381$$";
-    state.adminProfile = state.adminAuthenticated
-      ? { username: ADMIN_USER, role: "admin" }
-      : null;
-    return state.adminAuthenticated;
+    throw new Error("Este proyecto está configurado para modo local. Cambiá db/config.js a mode: 'superdb'.");
   }
 
   if (String(username || "").trim() !== ADMIN_USER) {
@@ -372,6 +380,21 @@ function formatSeconds(total) {
 
 function csvEscape(value) {
   return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function normalizeQuestionInput(q, index = 0) {
+  const normalized = {
+    id: q.id || crypto.randomUUID(),
+    prompt: String(q.prompt || q.question || "").trim(),
+    option_a: String(q.option_a || q.A || q.a || q.option1 || "").trim(),
+    option_b: String(q.option_b || q.B || q.b || q.option2 || "").trim(),
+    option_c: String(q.option_c || q.C || q.c || q.option3 || "").trim(),
+    option_d: String(q.option_d || q.D || q.d || q.option4 || "").trim(),
+    correct_option: String(q.correct_option || q.correcta || q.answer || "").trim().toUpperCase(),
+    explanation: String(q.explanation || q.explicacion || q.explicación || "").trim(),
+    position: Number(q.position) || index + 1
+  };
+  return normalized;
 }
 
 function getSelectedTest() {
@@ -916,7 +939,12 @@ const dataLayer = (() => {
     },
     async createTest(test, questions) {
       const local = loadLocalData();
-      local.tests.unshift({ ...test, questions });
+      local.tests.unshift({
+        ...test,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        questions
+      });
       saveLocalData(local.tests, local.attempts);
     },
     async deleteAttempt(id) {
@@ -947,8 +975,8 @@ async function bootstrap(preserveView = false) {
     }
   } catch (error) {
     console.error(error);
-    el.adminStatusNote.textContent = "Error de conexión";
-    showToast("No se pudieron sincronizar los datos con SuperBase.");
+    el.adminStatusNote.textContent = CONFIG_WANTS_SUPABASE ? "Error de conexión" : "Modo local";
+    showToast(error?.message || "No se pudieron sincronizar los datos con SuperBase.");
   }
 }
 
@@ -1065,16 +1093,7 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
     event.preventDefault();
     try {
       const parsed = JSON.parse(el.questionsJson.value || "[]");
-      const questions = parsed.map((q) => ({
-        id: crypto.randomUUID(),
-        prompt: String(q.prompt || "").trim(),
-        option_a: String(q.option_a || "").trim(),
-        option_b: String(q.option_b || "").trim(),
-        option_c: String(q.option_c || "").trim(),
-        option_d: String(q.option_d || "").trim(),
-        correct_option: String(q.correct_option || "").trim().toUpperCase(),
-        explanation: String(q.explanation || "").trim()
-      })).filter((q) =>
+      const questions = parsed.map((q, index) => normalizeQuestionInput(q, index)).filter((q) =>
         q.prompt &&
         q.option_a &&
         q.option_b &&
@@ -1087,14 +1106,12 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
       if (!el.testTitle.value.trim()) throw new Error("El título es obligatorio.");
 
       const test = {
-        id: crypto.randomUUID(),
         title: el.testTitle.value.trim(),
         description: el.testDescription.value.trim(),
         area: el.testArea.value.trim(),
         time_limit_minutes: Math.max(1, Number(el.testTimeLimit.value) || 25),
         timer_mode: el.testTimerMode.value === "asc" ? "asc" : "desc",
-        is_active: el.testActive.value === "true",
-        created_at: new Date().toISOString()
+        is_active: el.testActive.value === "true"
       };
 
       await dataLayer.createTest(test, questions);
