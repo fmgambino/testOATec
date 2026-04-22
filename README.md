@@ -22,3 +22,10 @@ La URL del proyecto quedó precargada a partir del project ref visto en tu captu
 `https://xahfaaefnuhpoeyanbxw.supabase.co`
 
 Solo te falta pegar la anon key pública del proyecto.
+
+
+## Cambios V6
+- Respuestas A/B/C/D aleatorias por alumno.
+- Bloqueo de cambio de respuesta en modo competencia.
+- Anti trampas: cambio de pestaña, blur, click derecho y atajos bloqueados.
+- Tiempo sincronizado con el servidor usando la fecha del proyecto Supabase cuando está disponible.

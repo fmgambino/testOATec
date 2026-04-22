@@ -407,3 +407,33 @@ body.light .toast { background: #152445; }
   }
   .summary-meta { grid-template-columns: 1fr; }
 }
+
+
+/* Modo competencia PRO */
+.question-card.enter-anim {
+  animation: cardIn .35s ease both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.option-btn {
+  transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease;
+}
+.option-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.question-card.locked {
+  box-shadow: 0 0 0 1px rgba(111,124,255,.28) inset;
+}
+.option-btn.locked-option {
+  cursor: not-allowed;
+  opacity: .95;
+}
+.answer-note {
+  animation: fadeInNote .22s ease both;
+}
+@keyframes fadeInNote {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

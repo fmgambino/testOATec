@@ -189,7 +189,13 @@ const state = {
   timerId: null,
   adminAuthenticated: false,
   adminProfile: null,
-  result: null
+  result: null,
+  examLocked: false,
+  examSessionToken: null,
+  serverTimeOffsetMs: 0,
+  antiCheatWarnings: 0,
+  antiCheatMaxWarnings: 2,
+  antiCheatTriggered: false
 };
 
 async function fetchAdminProfile() {
@@ -315,6 +321,84 @@ function showToast(message) {
   el.toast.classList.remove("hidden");
   clearTimeout(showToast._id);
   showToast._id = setTimeout(() => el.toast.classList.add("hidden"), 2600);
+}
+
+function hasSweetAlert() {
+  return typeof window.Swal !== "undefined";
+}
+
+async function showAlert({ icon = "info", title = "", text = "", html = "", confirmButtonText = "Aceptar" }) {
+  if (hasSweetAlert()) {
+    return window.Swal.fire({
+      icon,
+      title,
+      text,
+      html,
+      confirmButtonText,
+      background: document.body.classList.contains("light") ? "#ffffff" : "#0f1b35",
+      color: document.body.classList.contains("light") ? "#13203d" : "#eef2fb",
+      confirmButtonColor: "#6f7cff",
+      scrollbarPadding: false
+    });
+  }
+  showToast(text || title || "Operación completada.");
+  return Promise.resolve();
+}
+
+function buildTop10RankingHtml(testId, highlightAttemptId = null) {
+  const fullRanking = getAttemptRankings(testId);
+  const ranking = fullRanking.slice(0, 10);
+  const myPosition = fullRanking.findIndex((item) => item.id === highlightAttemptId) + 1;
+
+  if (!ranking.length) {
+    return `<p style="margin:0;color:#9ea8c0;">Todavía no hay resultados cargados para este test.</p>`;
+  }
+
+  const rows = ranking.map((item, index) => {
+    const isMine = item.id === highlightAttemptId;
+    const name = `${escapeHtml(item.last_name)}, ${escapeHtml(item.first_name)}`;
+    const rowStyle = isMine ? ' style="background: rgba(111,124,255,.16); font-weight:700;"' : "";
+    return `
+      <tr${rowStyle}>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${index + 1}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${name}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${escapeHtml(item.course)} ${escapeHtml(item.division)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${item.correct_answers}/${item.total_questions}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${Math.round(item.score_percentage)}%</td>
+        <td style="padding:8px 10px;border-bottom:1px solid rgba(158,168,192,.18);">${formatSeconds(item.duration_seconds)}</td>
+      </tr>`;
+  }).join("");
+
+  return `
+    <div style="text-align:left">
+      <div style="margin-bottom:12px;padding:12px 14px;border-radius:14px;background:rgba(111,124,255,.12);">
+        <strong>Tu ranking es:</strong> ${myPosition > 0 ? myPosition : "-"}
+      </div>
+      <div style="max-height:320px;overflow:auto;border:1px solid rgba(158,168,192,.18);border-radius:14px;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead>
+            <tr>
+              <th style="padding:8px 10px;text-align:left;">#</th>
+              <th style="padding:8px 10px;text-align:left;">Alumno</th>
+              <th style="padding:8px 10px;text-align:left;">Curso</th>
+              <th style="padding:8px 10px;text-align:left;">Puntaje</th>
+              <th style="padding:8px 10px;text-align:left;">%</th>
+              <th style="padding:8px 10px;text-align:left;">Tiempo</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function shuffleArray(items) {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 function showView(name) {
@@ -496,82 +580,260 @@ function validateParticipantForm() {
   };
 }
 
-function renderExam(test) {
-  state.currentTest = JSON.parse(JSON.stringify(test));
+
+function nowMs() {
+  return Date.now() + (Number(state.serverTimeOffsetMs) || 0);
+}
+
+async function syncServerTime() {
+  if (!SUPABASE_ENABLED) {
+    state.serverTimeOffsetMs = 0;
+    return 0;
+  }
+
+  const candidates = [
+    `${APP_CONFIG.url}/auth/v1/settings`,
+    `${APP_CONFIG.url}/rest/v1/`
+  ];
+
+  for (const endpoint of candidates) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          apikey: APP_CONFIG.anonKey,
+          Authorization: `Bearer ${APP_CONFIG.anonKey}`
+        }
+      });
+      const serverDateHeader = response.headers.get("date");
+      if (serverDateHeader) {
+        const offset = new Date(serverDateHeader).getTime() - Date.now();
+        state.serverTimeOffsetMs = Number.isFinite(offset) ? offset : 0;
+        return state.serverTimeOffsetMs;
+      }
+    } catch (error) {
+      console.warn("No se pudo sincronizar hora del servidor:", error);
+    }
+  }
+
+  state.serverTimeOffsetMs = 0;
+  return 0;
+}
+
+function lockAnsweredQuestion(card) {
+  card.classList.add("locked");
+  card.querySelectorAll(".option-btn").forEach((node) => {
+    node.disabled = true;
+    node.classList.add("locked-option");
+  });
+}
+
+function buildShuffledQuestion(question) {
+  const options = [
+    { original: "A", text: question.option_a || "" },
+    { original: "B", text: question.option_b || "" },
+    { original: "C", text: question.option_c || "" },
+    { original: "D", text: question.option_d || "" }
+  ];
+
+  const shuffled = shuffleArray(options.map((item) => ({ ...item })));
+  const byIndexLetter = ["A", "B", "C", "D"];
+
+  return {
+    ...JSON.parse(JSON.stringify(question)),
+    shuffled_options: shuffled.map((item, index) => ({
+      displayLetter: byIndexLetter[index],
+      originalLetter: item.original,
+      text: item.text
+    }))
+  };
+}
+
+function getQuestionById(questionId) {
+  return state.currentTest?.questions?.find((item) => item.id === questionId) || null;
+}
+
+function getAnsweredCount() {
+  return Object.keys(state.answers).length;
+}
+
+function getCorrectCount() {
+  if (!state.currentTest) return 0;
+  let correct = 0;
+  state.currentTest.questions.forEach((q) => {
+    const selected = state.answers[q.id];
+    if (selected && selected === q.correct_option) correct += 1;
+  });
+  return correct;
+}
+
+async function registerAntiCheatEvent(reason) {
+  if (!state.currentTest || state.antiCheatTriggered) return;
+
+  state.antiCheatWarnings += 1;
+  const remaining = Math.max(state.antiCheatMaxWarnings - state.antiCheatWarnings, 0);
+
+  if (state.antiCheatWarnings >= state.antiCheatMaxWarnings) {
+    state.antiCheatTriggered = true;
+    await showAlert({
+      icon: "warning",
+      title: "Modo examen activado",
+      html: `<p>Se detectó una salida de foco durante la evaluación.</p>
+             <p><strong>El intento se enviará automáticamente.</strong></p>
+             <p style="margin-top:8px;color:#9ea8c0;">Motivo detectado: ${escapeHtml(reason)}</p>`,
+      confirmButtonText: "Entendido"
+    });
+    await finishExam({ forced: true, reason });
+    return;
+  }
+
+  await showAlert({
+    icon: "warning",
+    title: "Atención",
+    html: `<p>No cambies de pestaña ni minimices la ventana durante el examen.</p>
+           <p>Advertencias usadas: <strong>${state.antiCheatWarnings}/${state.antiCheatMaxWarnings}</strong></p>
+           <p>Advertencias restantes: <strong>${remaining}</strong></p>
+           <p style="margin-top:8px;color:#9ea8c0;">Motivo detectado: ${escapeHtml(reason)}</p>`,
+    confirmButtonText: "Continuar"
+  });
+}
+
+function examKeydownGuard(event) {
+  if (!views.exam.classList.contains("active") || !state.currentTest) return;
+
+  const key = String(event.key || "").toLowerCase();
+  const blocked =
+    key === "f12" ||
+    (event.ctrlKey && ["u", "c", "x", "v", "p", "s"].includes(key)) ||
+    (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(key));
+
+  if (blocked) {
+    event.preventDefault();
+    event.stopPropagation();
+    registerAntiCheatEvent(`Atajo bloqueado: ${escapeHtml(event.key || "tecla")}`);
+  }
+}
+
+function examVisibilityGuard() {
+  if (document.hidden && views.exam.classList.contains("active") && state.currentTest) {
+    registerAntiCheatEvent("Cambio de pestaña o ventana");
+  }
+}
+
+function examBlurGuard() {
+  if (views.exam.classList.contains("active") && state.currentTest) {
+    registerAntiCheatEvent("La ventana perdió el foco");
+  }
+}
+
+function examContextMenuGuard(event) {
+  if (views.exam.classList.contains("active") && state.currentTest) {
+    event.preventDefault();
+    registerAntiCheatEvent("Click derecho bloqueado");
+  }
+}
+
+async function prepareExamSession() {
+  await syncServerTime();
   state.answers = {};
-  state.startTime = Date.now();
+  state.startTime = nowMs();
+  state.examLocked = false;
+  state.examSessionToken = crypto.randomUUID();
+  state.antiCheatWarnings = 0;
+  state.antiCheatTriggered = false;
   clearInterval(state.timerId);
+}
 
-  el.examTitle.textContent = test.title;
-  el.examDescription.textContent = `${test.description || ""} · ${test.time_limit_minutes} minutos`;
-  el.timerModeLabel.textContent = test.timer_mode === "asc" ? "Ascendente" : "Descendente";
-  el.timerLabel.textContent = test.timer_mode === "desc" ? formatSeconds(Number(test.time_limit_minutes) * 60) : "00:00";
+function renderExam(test) {
+  const shuffledQuestions = shuffleArray((test.questions || []).map((question) => buildShuffledQuestion(question)));
+  state.currentTest = {
+    ...JSON.parse(JSON.stringify(test)),
+    questions: shuffledQuestions
+  };
 
-  el.questionsContainer.innerHTML = test.questions.map((question, index) => `
-    <article class="card question-card" data-question-id="${question.id}">
-      <span class="pill">Pregunta ${index + 1}</span>
-      <h3>${escapeHtml(question.prompt)}</h3>
-      <div class="options-grid">
-        ${["A","B","C","D"].map((letter) => {
-          const optionValue = question[`option_${letter.toLowerCase()}`] || "";
-          return `<button class="secondary-btn option-btn" type="button" data-letter="${letter}">
-            <strong>${letter}.</strong> ${escapeHtml(optionValue)}
-          </button>`;
-        }).join("")}
-      </div>
-      <div class="answer-note hidden"></div>
-    </article>
-  `).join("");
+  prepareExamSession().then(() => {
+    el.examTitle.textContent = test.title;
+    el.examDescription.textContent = `${test.description || ""} · ${test.time_limit_minutes} minutos · preguntas y respuestas aleatorias por alumno`;
+    el.timerModeLabel.textContent = test.timer_mode === "asc" ? "Ascendente" : "Descendente";
+    el.timerLabel.textContent = test.timer_mode === "desc" ? formatSeconds(Number(test.time_limit_minutes) * 60) : "00:00";
 
-  bindQuestionButtons();
-  updateExamStats();
-  state.timerId = setInterval(updateTimer, 1000);
-  showView("exam");
+    el.questionsContainer.innerHTML = state.currentTest.questions.map((question, index) => `
+      <article class="card question-card enter-anim" data-question-id="${question.id}">
+        <span class="pill">Pregunta ${index + 1}</span>
+        <h3>${escapeHtml(question.prompt)}</h3>
+        <div class="options-grid">
+          ${(question.shuffled_options || []).map((option) => `
+            <button class="secondary-btn option-btn" type="button" data-display-letter="${option.displayLetter}" data-original-letter="${option.originalLetter}">
+              <strong>${option.displayLetter}.</strong> ${escapeHtml(option.text)}
+            </button>
+          `).join("")}
+        </div>
+        <div class="answer-note hidden"></div>
+      </article>
+    `).join("");
+
+    bindQuestionButtons();
+    updateExamStats();
+    state.timerId = setInterval(updateTimer, 1000);
+    showView("exam");
+  });
 }
 
 function updateTimer() {
   if (!state.startTime || !state.currentTest) return;
-  const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+  const elapsed = Math.floor((nowMs() - state.startTime) / 1000);
   const total = Number(state.currentTest.time_limit_minutes) * 60;
 
   if (state.currentTest.timer_mode === "asc") {
     el.timerLabel.textContent = formatSeconds(elapsed);
-    if (elapsed >= total) finishExam();
+    if (elapsed >= total) finishExam({ forced: true, reason: "Tiempo agotado" });
     return;
   }
 
   const remaining = total - elapsed;
-  el.timerLabel.textContent = formatSeconds(remaining);
-  if (remaining <= 0) finishExam();
+  el.timerLabel.textContent = formatSeconds(Math.max(remaining, 0));
+  if (remaining <= 0) finishExam({ forced: true, reason: "Tiempo agotado" });
 }
 
 function bindQuestionButtons() {
   document.querySelectorAll(".option-btn").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const card = button.closest("[data-question-id]");
       const qid = card.dataset.questionId;
-      const question = state.currentTest.questions.find((item) => item.id === qid);
-      state.answers[qid] = button.dataset.letter;
+      const question = getQuestionById(qid);
+      if (!question || state.examLocked) return;
+
+      if (state.answers[qid]) {
+        await showAlert({
+          icon: "info",
+          title: "Respuesta bloqueada",
+          text: "En modo competencia no se puede cambiar una respuesta una vez elegida."
+        });
+        return;
+      }
+
+      const selectedOriginal = button.dataset.originalLetter;
+      state.answers[qid] = selectedOriginal;
 
       card.querySelectorAll(".option-btn").forEach((node) => {
-        node.classList.remove("selected");
-        node.classList.remove("incorrect");
+        node.classList.remove("selected", "incorrect", "correct");
       });
 
       button.classList.add("selected");
 
       const note = card.querySelector(".answer-note");
-      const isCorrect = button.dataset.letter === question.correct_option;
+      const isCorrect = selectedOriginal === question.correct_option;
       note.classList.remove("hidden");
       note.textContent = isCorrect
-        ? "Respuesta elegida correctamente."
-        : `Respuesta elegida. Correcta: ${question.correct_option}. ${question.explanation || ""}`;
+        ? "Respuesta elegida correctamente. Quedó bloqueada para este intento."
+        : `Respuesta registrada. Correcta: ${question.correct_option}. ${question.explanation || ""}`;
 
       card.querySelectorAll(".option-btn").forEach((node) => {
-        if (node.dataset.letter === question.correct_option) node.classList.add("correct");
-        if (node.dataset.letter === state.answers[qid] && state.answers[qid] !== question.correct_option) node.classList.add("incorrect");
+        if (node.dataset.originalLetter === question.correct_option) node.classList.add("correct");
+        if (node.dataset.originalLetter === selectedOriginal && selectedOriginal !== question.correct_option) node.classList.add("incorrect");
       });
 
+      lockAnsweredQuestion(card);
       updateExamStats();
     });
   });
@@ -579,35 +841,30 @@ function bindQuestionButtons() {
 
 function updateExamStats() {
   if (!state.currentTest) return;
-  const answered = Object.keys(state.answers).length;
-  let correct = 0;
-  state.currentTest.questions.forEach((q) => {
-    if (state.answers[q.id] === q.correct_option) correct += 1;
-  });
+  const answered = getAnsweredCount();
+  const correct = getCorrectCount();
   el.answeredLabel.textContent = answered;
   el.correctLabel.textContent = correct;
 }
 
-async function finishExam() {
-  if (!state.currentTest) return;
+async function finishExam(options = {}) {
+  if (!state.currentTest || state.examLocked) return;
+  state.examLocked = true;
   clearInterval(state.timerId);
 
   const participant = validateParticipantForm();
   if (!participant) {
     showToast("Completá primero los datos del participante.");
+    state.examLocked = false;
     showView("home");
     return;
   }
 
   const total = state.currentTest.questions.length;
-  let correct = 0;
-  state.currentTest.questions.forEach((q) => {
-    if (state.answers[q.id] === q.correct_option) correct += 1;
-  });
-
-  const realDuration = Math.floor((Date.now() - state.startTime) / 1000);
+  const correct = getCorrectCount();
+  const realDuration = Math.floor((nowMs() - state.startTime) / 1000);
   const maxDuration = Number(state.currentTest.time_limit_minutes) * 60;
-  const duration = Math.min(realDuration, maxDuration);
+  const duration = Math.min(Math.max(realDuration, 0), maxDuration);
   const percentage = total ? (correct / total) * 100 : 0;
 
   const payload = {
@@ -626,20 +883,41 @@ async function finishExam() {
     duration_seconds: duration,
     timer_mode: state.currentTest.timer_mode,
     approved: percentage >= PASS_PERCENTAGE,
-    created_at: new Date().toISOString()
+    created_at: new Date(nowMs()).toISOString()
   };
 
-  await dataLayer.saveAttempt(payload);
-  state.attempts.push(payload);
-  state.result = payload;
-  renderResult();
-  renderTopStats();
-  renderRankingPreview(state.currentTest.id);
-  showView("result");
+  try {
+    await dataLayer.saveAttempt(payload);
+    await bootstrap(true);
+    const inserted = state.attempts.find((item) => item.id === payload.id) || payload;
+    state.result = inserted;
+    renderResult();
+    renderTopStats();
+    renderRankingPreview(state.currentTest.id);
+    showView("result");
+
+    await showAlert({
+      icon: options.forced ? "warning" : "success",
+      title: options.forced ? "Intento enviado automáticamente" : "Resultado guardado correctamente",
+      html: buildTop10RankingHtml(state.currentTest.id, payload.id),
+      confirmButtonText: "Ver resultado"
+    });
+  } catch (error) {
+    console.error(error);
+    state.examLocked = false;
+    await showAlert({
+      icon: "error",
+      title: "No se pudo guardar el resultado",
+      text: error?.message || "Revisá la conexión con SuperBase e intentá nuevamente."
+    });
+    showView("home");
+  }
 }
 
 function renderResult() {
   const r = state.result;
+  const ranking = getAttemptRankings(r.test_id || state.currentTest?.id);
+  const myPosition = ranking.findIndex((item) => item.id === r.id) + 1;
   el.resultSummary.innerHTML = [
     ["Alumno", `${r.last_name}, ${r.first_name}`],
     ["Test", r.test_title],
@@ -648,6 +926,7 @@ function renderResult() {
     ["Tiempo", formatSeconds(r.duration_seconds)],
     ["Curso", `${r.course} ${r.division}`],
     ["Cronómetro", r.timer_mode === "asc" ? "Ascendente" : "Descendente"],
+    ["Ranking", myPosition ? `#${myPosition}` : "Pendiente"],
     ["Estado", r.approved ? "Aprobado" : "En entrenamiento"]
   ].map(([label, value]) => `<div class="result-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
 }
@@ -1015,8 +1294,17 @@ function bindEvents() {
 
   document.getElementById("finishTestBtn").addEventListener("click", finishExam);
 
-  document.getElementById("cancelTestBtn").addEventListener("click", () => {
+  document.getElementById("cancelTestBtn").addEventListener("click", async () => {
+    if (!state.currentTest) return showView("home");
+    const result = await showAlert({
+      icon: "warning",
+      title: "Cancelar intento",
+      text: "Si cancelás, este intento no se guardará. ¿Querés volver al inicio?",
+      confirmButtonText: "Volver al inicio"
+    });
     clearInterval(state.timerId);
+    state.currentTest = null;
+    state.answers = {};
     showView("home");
   });
 
@@ -1083,9 +1371,10 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
       }
       fillCreateFormFromTxt(parsed);
       showToast(`TXT importado. Se cargaron ${parsed.questions.length} preguntas.`);
+      await showAlert({ icon: "success", title: "TXT importado", text: `Se cargaron ${parsed.questions.length} preguntas correctamente.` });
     } catch (error) {
       console.error(error);
-      showToast("No se pudo leer el TXT.");
+      await showAlert({ icon: "error", title: "No se pudo leer el TXT", text: "Verificá el formato del archivo e intentá nuevamente." });
     }
   });
 
@@ -1122,10 +1411,21 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
       el.txtImportInput.value = "";
       await bootstrap();
       showView("admin");
-      showToast("Test creado correctamente.");
+      await showAlert({ icon: "success", title: "Test creado correctamente", text: "El test y sus preguntas fueron guardados correctamente." });
     } catch (error) {
       console.error(error);
-      showToast(error.message || "No se pudo crear el test. Revisá el contenido.");
+      await showAlert({ icon: "error", title: "No se pudo crear el test", text: error.message || "Revisá el contenido e intentá nuevamente." });
+    }
+  });
+
+  document.addEventListener("visibilitychange", examVisibilityGuard);
+  window.addEventListener("blur", examBlurGuard);
+  document.addEventListener("contextmenu", examContextMenuGuard);
+  document.addEventListener("keydown", examKeydownGuard);
+  window.addEventListener("beforeunload", (event) => {
+    if (views.exam.classList.contains("active") && state.currentTest && !state.examLocked) {
+      event.preventDefault();
+      event.returnValue = "";
     }
   });
 }
