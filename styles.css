@@ -470,3 +470,59 @@ body.light .toast { background: #152445; }
     font-size: 12px;
   }
 }
+
+.footer {
+  margin-top: 40px;
+  padding: 24px 16px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  background: rgba(6, 15, 35, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+body.light .footer {
+  background: rgba(255,255,255,0.7);
+}
+
+.footer-content {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.footer strong {
+  color: var(--text);
+}
+
+.footer-cafecito img {
+  margin-top: 8px;
+  height: 40px;
+  transition: transform 0.2s ease;
+}
+
+.footer-cafecito img:hover {
+  transform: scale(1.05);
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .footer {
+    padding: 18px 12px;
+  }
+
+  .footer p {
+    font-size: 0.8rem;
+  }
+
+  .footer-cafecito img {
+    height: 36px;
+  }
+}
