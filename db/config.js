@@ -1,8 +1,8 @@
 window.SUPERDB_CONFIG = {
   mode: "superdb",
-  url: "https://xahfaaefnuhpoeyanbxw.supabase.co",
-  anonKey: "sb_publishable_pNfmeizpQjpSBvw594rcjQ_G0bCSS2w",
-  adminUsername: "admin",
-  adminEmail: "admin@oatec.local",
+  url: "https://mzkfkozckofuztoymvdo.supabase.co",
+  anonKey: "sb_publishable_QwOEcIbHIteFa6EWQdMong_Y10rILld",
+  adminUsername: "fmgambino",
+  adminEmail: "fernando.m.gambino@gmail.com",
   storagePrefix: "oatec-itba-2026"
 };

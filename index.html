@@ -279,8 +279,8 @@
       <h3>Ingresar al panel</h3>
       <p class="muted">Usá el usuario <strong>admin</strong> y la contraseña del administrador creada en SuperBase Auth.</p>
       <form id="adminLoginForm" class="form-grid compact-grid">
-        <div class="field full"><label>Usuario</label><input id="adminUser" required /></div>
-        <div class="field full"><label>Contraseña</label><input id="adminPass" type="password" required /></div>
+        <div class="field full"><label>Usuario</label><input id="adminUser" autocomplete="username" required /></div>
+        <div class="field full"><label>Contraseña</label><input id="adminPass" type="password" autocomplete="current-password" required /></div>
         <div class="modal-actions">
           <button id="closeAdminLoginBtn" class="secondary-btn" type="button">Cancelar</button>
           <button class="primary-btn" type="submit">Ingresar</button>

@@ -2,8 +2,8 @@
 -- OATec ITBA · Base de datos única, completa y compatible con tu proyecto
 -- Ejecutar TODO este archivo en Supabase SQL Editor.
 -- Luego crear el usuario admin en Authentication:
---   email: admin@oatec.local
---   password: Admin0381$$
+--   email: fernando.m.gambino@gmail.com
+--   password: Jamboree0342$$
 -- Después volver a ejecutar ESTE MISMO ARCHIVO o solo el bloque final de sincronización de admin.
 --
 -- IMPORTANTE:
@@ -323,7 +323,7 @@ end $$;
 -- =========================================================
 -- SINCRONIZACIÓN DEL ADMIN POR EMAIL
 -- =========================================================
--- Si ya creaste en Authentication el usuario admin@oatec.local,
+-- Si ya creaste en Authentication el usuario fernando.m.gambino@gmail.com,
 -- este bloque lo vincula automáticamente a admin_profiles.
 -- Si todavía no existe, solo muestra un notice y no falla.
 
@@ -334,15 +334,15 @@ begin
   select id
     into v_admin_id
   from auth.users
-  where email = 'admin@oatec.local'
+  where email = 'fernando.m.gambino@gmail.com'
   order by created_at asc
   limit 1;
 
   if v_admin_id is null then
-    raise notice 'Todavía no existe el usuario admin@oatec.local en Authentication. Crealo y luego reejecutá este archivo.';
+    raise notice 'Todavía no existe el usuario fernando.m.gambino@gmail.com en Authentication. Crealo y luego reejecutá este archivo.';
   else
     insert into public.admin_profiles (user_id, username, full_name, role, is_active)
-    values (v_admin_id, 'admin', 'Administrador OATec', 'admin', true)
+    values (v_admin_id, 'fmgambino', 'Fernando Gambino', 'admin', true)
     on conflict (user_id) do update
       set username = excluded.username,
           full_name = excluded.full_name,

@@ -1,6 +1,6 @@
 const APP_CONFIG = window.SUPERDB_CONFIG || {};
-const ADMIN_USER = APP_CONFIG.adminUsername || "admin";
-const ADMIN_EMAIL = APP_CONFIG.adminEmail || "admin@oatec.local";
+const ADMIN_USER = APP_CONFIG.adminUsername || "fernando.m.gambino@gmail.com";
+const ADMIN_EMAIL = APP_CONFIG.adminEmail || "fernando.m.gambino@gmail.com";
 const CONFIG_WANTS_SUPABASE = APP_CONFIG.mode === "superdb";
 const HAS_VALID_SUPABASE_KEYS =
   !!APP_CONFIG.url &&
@@ -279,8 +279,16 @@ async function loginAdminWithSupabase(username, password) {
     throw new Error("Este proyecto está configurado para modo local. Cambiá db/config.js a mode: 'superdb'.");
   }
 
-  if (String(username || "").trim() !== ADMIN_USER) {
-    throw new Error("El usuario administrador configurado es 'admin'.");
+  const inputUser = String(username || "").trim().toLowerCase();
+  const allowedUsers = [
+    String(ADMIN_USER || "").trim().toLowerCase(),
+    String(ADMIN_EMAIL || "").trim().toLowerCase(),
+    "fmgambino",
+    "fernando.m.gambino@gmail.com"
+  ].filter(Boolean);
+
+  if (!allowedUsers.includes(inputUser)) {
+    throw new Error(`Usuario admin inválido. Usá ${ADMIN_EMAIL} o ${ADMIN_USER}.`);
   }
 
   const { error } = await supabaseClient.auth.signInWithPassword({
@@ -288,12 +296,14 @@ async function loginAdminWithSupabase(username, password) {
     password
   });
 
-  if (error) throw error;
+  if (error) {
+    throw new Error("Credenciales inválidas en Supabase Auth. Verificá que exista el usuario fernando.m.gambino@gmail.com y que la contraseña sea correcta.");
+  }
 
   const ok = await refreshAdminSession();
   if (!ok) {
     await supabaseClient.auth.signOut();
-    throw new Error("La cuenta inició sesión pero no tiene rol admin en SuperBase.");
+    throw new Error("La cuenta inició sesión pero no tiene perfil admin. Ejecutá el SQL corregido después de crear el usuario en Authentication.");
   }
 
   return true;

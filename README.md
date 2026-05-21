@@ -29,3 +29,15 @@ Solo te falta pegar la anon key pública del proyecto.
 - Bloqueo de cambio de respuesta en modo competencia.
 - Anti trampas: cambio de pestaña, blur, click derecho y atajos bloqueados.
 - Tiempo sincronizado con el servidor usando la fecha del proyecto Supabase cuando está disponible.
+
+
+## Login admin corregido
+
+Este paquete permite entrar al panel admin usando:
+
+- Usuario: `fmgambino` o `fernando.m.gambino@gmail.com`
+- Email real de Supabase Auth: `fernando.m.gambino@gmail.com`
+
+La contraseña no se guarda en el proyecto ni en SQL. Debe crearse en Supabase > Authentication > Users con el password indicado por el administrador.
+
+Después de crear el usuario en Supabase Auth, ejecutá `db/admin_fernando_setup.sql` o el SQL completo `db/oatec_supabase_base_unica.sql`.
