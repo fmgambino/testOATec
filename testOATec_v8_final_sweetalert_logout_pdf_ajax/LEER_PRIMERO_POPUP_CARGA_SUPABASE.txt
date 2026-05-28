@@ -1,0 +1,22 @@
+ACTUALIZACION: Popup de carga con porcentaje para Guardar test
+
+Cambios incluidos:
+1. Al presionar "Guardar test" aparece un popup modal de carga.
+2. La barra muestra porcentaje real de avance.
+3. Las preguntas se suben a Supabase en bloques de 10 para poder actualizar el progreso.
+4. Si falla la carga de preguntas, se elimina el test creado para evitar datos incompletos.
+5. Se mantiene Supabase Realtime ya integrado en el proyecto.
+
+Archivos modificados:
+- index.html
+- app.js
+- styles.css
+
+Uso:
+1. Reemplazar los archivos del proyecto por los de este ZIP.
+2. Verificar db/config.js con la URL y publishable/anon key correcta de Supabase.
+3. Si usa Realtime, ejecutar el SQL incluido en db/patch_realtime_guardar_tests.sql si todavía no fue aplicado.
+4. Ingresar al área admin, importar el TXT y presionar "Guardar test".
+
+Nota:
+El error de consola "A listener indicated an asynchronous response..." suele venir de extensiones del navegador. Esta versión muestra los errores reales de Supabase en pantalla si falla el insert.

@@ -1,0 +1,38 @@
+ACTUALIZACIÓN APLICADA
+
+1) SweetAlert2
+- Se reemplazaron confirmaciones nativas por SweetAlert2.
+- El botón Guardar test ahora pide confirmación antes de subir a Supabase.
+- El botón Eliminar test ahora pide confirmación con SweetAlert2.
+- El botón Eliminar intento ahora pide confirmación con SweetAlert2.
+- El botón Cerrar sesión ahora pide confirmación con SweetAlert2 y ejecuta supabase.auth.signOut().
+
+2) Guardado con progreso
+- Al confirmar Guardar, se muestra popup/barra de carga con porcentaje y contador de preguntas.
+- La carga inserta el test y luego las preguntas en Supabase por tandas.
+
+3) Exportación
+- El botón “Exportar datos” abre un popup con checkboxes:
+  - Cuestionarios
+  - Preguntas
+  - Resultado de Test
+  - Cuadro de Ranking
+- Permite exportar CSV o PDF.
+- El PDF incluye membrete con logo OATec, título, fecha y hora.
+
+4) Supabase
+- El guardado usa las columnas reales:
+  tests: title, description, area, time_limit_minutes, timer_mode, is_active
+  questions: test_id, position, prompt, option_a, option_b, option_c, option_d, correct_option, explanation
+- La eliminación de test borra primero attempts y questions para evitar errores de clave foránea.
+- Se conserva Realtime para tests, questions y attempts.
+
+5) Librerías agregadas por CDN en index.html
+- SweetAlert2 ya estaba incluido.
+- jsPDF
+- jsPDF AutoTable
+
+IMPORTANTE
+Ejecutar en Supabase el archivo:
+db/patch_realtime_guardar_tests.sql
+

@@ -1,0 +1,19 @@
+ACTUALIZACIÓN OATec v8 corregida
+
+1) Subí estos archivos al hosting reemplazando tu versión actual.
+2) En Supabase > SQL Editor, ejecutá:
+   db/patch_realtime_guardar_tests.sql
+3) Verificá que exista el usuario en Authentication:
+   fernando.m.gambino@gmail.com
+4) Entrá al panel admin, importá el TXT y presioná Guardar test.
+
+Correcciones incluidas:
+- Guardado real en tablas tests y questions.
+- Mapeo correcto del TXT/JSON hacia columnas Supabase:
+  prompt, option_a, option_b, option_c, option_d, correct_option, explanation.
+- Captura de errores reales de Supabase en pantalla.
+- Realtime para tests, questions y attempts.
+- Reintento automático si WebSocket se corta.
+
+Nota:
+El error de consola "A listener indicated an asynchronous response..." suele ser provocado por extensiones del navegador. Para probar, usá ventana incógnito sin extensiones. Si Supabase devuelve error real, ahora aparecerá en el popup.

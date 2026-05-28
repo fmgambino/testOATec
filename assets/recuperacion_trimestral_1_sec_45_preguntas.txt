@@ -1,0 +1,366 @@
+TITULO: Recuperación Trimestral N°1 · Sistemas Electrónicos de Control
+DESCRIPCION: Evaluación de recuperación sobre automatización, sistemas electrónicos de control, sistemas de control, señales analógicas y digitales.
+AREA: Sistemas Electrónicos de Control
+DURACION: 45
+CRONOMETRO: desc
+ACTIVO: si
+---
+PREGUNTA: ¿Qué es la automatización según los conceptos generales vistos en clase?
+A: Controlar algo de forma autónoma o semiautónoma
+B: Realizar cálculos matemáticos solamente
+C: Reparar equipos eléctricos manualmente
+D: Diseñar planos mecánicos sin control
+CORRECTA: A
+EXPLICACION: La automatización permite que un proceso o dispositivo se controle de forma autónoma o semiautónoma.
+---
+PREGUNTA: ¿Cuál de los siguientes elementos forma parte de los necesarios para la automatización?
+A: Mecánico
+B: Comercial
+C: Contable
+D: Publicitario
+CORRECTA: A
+EXPLICACION: En automatización se consideran elementos mecánicos, hidráulicos, neumáticos, eléctricos y electrónicos.
+---
+PREGUNTA: ¿Qué tipo de elemento electrónico puede formar parte de una automatización?
+A: Analógico o digital
+B: Manual o artesanal
+C: Comercial o administrativo
+D: Legal o contable
+CORRECTA: A
+EXPLICACION: El elemento electrónico de una automatización puede ser analógico o digital.
+---
+PREGUNTA: ¿Qué buscaban reemplazar las primeras máquinas simples?
+A: Una forma de esfuerzo humano por otra forma de esfuerzo
+B: La electricidad por señales digitales
+C: Los sensores por actuadores
+D: El software por tarjetas perforadas
+CORRECTA: A
+EXPLICACION: Las primeras máquinas simples sustituían una forma de esfuerzo por otra manejada por el ser humano.
+---
+PREGUNTA: ¿Qué fuente natural de energía fue usada históricamente para mover máquinas?
+A: El viento
+B: La publicidad
+C: La contabilidad
+D: La impresión 3D
+CORRECTA: A
+EXPLICACION: Históricamente se usaron fuentes naturales como el viento, las mareas o el flujo de agua.
+---
+PREGUNTA: ¿Qué invento utilizó Joseph Marie Jacquard en 1801 para automatizar el telar?
+A: Tarjetas perforadas
+B: Sensores ultrasónicos
+C: Microcontroladores
+D: Pantallas táctiles
+CORRECTA: A
+EXPLICACION: Jacquard utilizó tarjetas perforadas para automatizar el telar.
+---
+PREGUNTA: ¿Cuál es una ventaja de la robótica industrial mencionada en la clase?
+A: Mayor eficiencia
+B: Menor precisión
+C: Menor control de calidad
+D: Aumento del trabajo repetitivo humano
+CORRECTA: A
+EXPLICACION: La robótica industrial puede mejorar la eficiencia, la repetitividad y el control de calidad.
+---
+PREGUNTA: ¿Cuál es una desventaja posible de la automatización industrial?
+A: Requerir gran capital inicial
+B: Eliminar todo mantenimiento
+C: No necesitar energía
+D: No usar elementos eléctricos
+CORRECTA: A
+EXPLICACION: La automatización puede requerir una inversión inicial elevada.
+---
+PREGUNTA: ¿Cuál fue el núcleo de la primera revolución industrial?
+A: La mecanización
+B: La inteligencia artificial
+C: La telefonía móvil
+D: La computación en la nube
+CORRECTA: A
+EXPLICACION: La primera revolución industrial se centró en la mecanización, como la máquina de vapor y el telar mecánico.
+---
+PREGUNTA: ¿En qué se centró la segunda revolución industrial según la clase?
+A: En la automatización de la industria
+B: En la agricultura manual
+C: En la escritura artesanal
+D: En la venta minorista
+CORRECTA: A
+EXPLICACION: La segunda revolución industrial se asocia a la automatización industrial.
+---
+PREGUNTA: ¿Qué permitió que la automatización fuera realmente práctica?
+A: La evolución de las computadoras digitales
+B: La eliminación de sensores
+C: La reducción de actuadores
+D: La ausencia de control
+CORRECTA: A
+EXPLICACION: Las computadoras digitales aportaron flexibilidad para manejar distintos tipos de tareas.
+---
+PREGUNTA: ¿Desde qué década comenzaron a aparecer computadoras digitales aplicables a la industria?
+A: Década de 1960
+B: Década de 1760
+C: Década de 1860
+D: Década de 2060
+CORRECTA: A
+EXPLICACION: Las computadoras digitales industriales comenzaron a aparecer con fuerza en la década de 1960.
+---
+PREGUNTA: ¿Cuál puede ser un ejemplo físico simple de sistema automatizado?
+A: Una puerta automatizada
+B: Una hoja de papel
+C: Un pizarrón común
+D: Un lápiz sin mecanismo
+CORRECTA: A
+EXPLICACION: Una puerta puede automatizarse mediante elementos hidráulicos, eléctricos y electrónicos.
+---
+PREGUNTA: ¿Qué característica debe tener un brazo robótico de ensamblaje?
+A: Gran precisión
+B: Funcionamiento aleatorio
+C: Movimiento inseguro
+D: Ausencia de control
+CORRECTA: A
+EXPLICACION: Un brazo robótico industrial debe ser preciso para cumplir correctamente su tarea.
+---
+PREGUNTA: ¿Qué característica debe tener un elevador automatizado?
+A: Seguridad
+B: Movimiento sin restricciones
+C: Falla permanente
+D: Ausencia de sensores
+CORRECTA: A
+EXPLICACION: Un elevador automatizado debe operar de forma segura para evitar accidentes.
+---
+PREGUNTA: ¿Qué es la automatización industrial?
+A: Uso de sistemas computarizados y electromecánicos para fines industriales
+B: Uso exclusivo de herramientas manuales
+C: Proceso de venta sin máquinas
+D: Registro contable de una empresa
+CORRECTA: A
+EXPLICACION: La automatización industrial utiliza sistemas computarizados y electromecánicos en procesos industriales.
+---
+PREGUNTA: ¿Qué incluye la instrumentación industrial?
+A: Sensores y transmisores de campo
+B: Solamente escritorios
+C: Únicamente elementos decorativos
+D: Solo documentos impresos
+CORRECTA: A
+EXPLICACION: La instrumentación industrial incluye sensores, transmisores y elementos de control.
+---
+PREGUNTA: ¿Qué sistemas permiten supervisar y controlar operaciones industriales en tiempo real?
+A: Sistemas de control y supervisión
+B: Sistemas de dibujo artístico
+C: Sistemas de archivo manual
+D: Sistemas de ventas presenciales
+CORRECTA: A
+EXPLICACION: Los sistemas de control y supervisión permiten controlar procesos industriales en tiempo real.
+---
+PREGUNTA: ¿Cuál es considerado el cerebro de control en la automatización según la clase?
+A: PLC
+B: Resorte
+C: Polea
+D: Palanca
+CORRECTA: A
+EXPLICACION: El PLC funciona como controlador central o cerebro en muchos sistemas automatizados.
+---
+PREGUNTA: ¿Por qué es importante que no falle la automatización?
+A: Porque puede afectar la seguridad de las personas
+B: Porque mejora la decoración
+C: Porque reduce el uso de sensores
+D: Porque elimina la necesidad de control
+CORRECTA: A
+EXPLICACION: Una falla en automatización puede producir situaciones peligrosas, especialmente en sistemas como ascensores.
+---
+PREGUNTA: ¿Por qué surgen los Sistemas Electrónicos de Control?
+A: Por la necesidad de mejorar procesos industriales
+B: Para eliminar toda producción
+C: Para evitar el uso de tecnología
+D: Para reemplazar la industria por comercio
+CORRECTA: A
+EXPLICACION: Surgen para manipular procesos industriales de manera más eficaz y eficiente.
+---
+PREGUNTA: ¿Cuál es el objetivo de los Sistemas Electrónicos de Control?
+A: Sistematizar y controlar procesos industriales
+B: Dibujar circuitos sin aplicarlos
+C: Aumentar fallas mecánicas
+D: Evitar mediciones
+CORRECTA: A
+EXPLICACION: Los S.E.C. ayudan a sistematizar y controlar procesos de una industria.
+---
+PREGUNTA: ¿Qué es un sistema?
+A: Un conjunto de partes o componentes relacionados entre sí
+B: Un elemento aislado sin relación
+C: Una sola pieza sin entorno
+D: Un documento administrativo
+CORRECTA: A
+EXPLICACION: Un sistema está formado por componentes que se relacionan entre sí.
+---
+PREGUNTA: ¿Qué elementos poseen todos los sistemas?
+A: Composición, estructura y entorno
+B: Precio, publicidad y venta
+C: Color, tamaño y marca
+D: Factura, recibo y pago
+CORRECTA: A
+EXPLICACION: Todos los sistemas tienen composición, estructura y entorno.
+---
+PREGUNTA: ¿Qué significa control en el contexto de sistemas?
+A: Capacidad de manipular procesos dentro de un sistema
+B: Capacidad de vender productos
+C: Capacidad de dibujar planos
+D: Capacidad de archivar documentos
+CORRECTA: A
+EXPLICACION: Control es la capacidad de manipular procesos dentro de un sistema determinado.
+---
+PREGUNTA: ¿Qué puede significar la palabra control?
+A: Comprobación, inspección, fiscalización o intervención
+B: Solamente decoración
+C: Únicamente publicidad
+D: Solo almacenamiento
+CORRECTA: A
+EXPLICACION: Control puede asociarse a comprobación, inspección, fiscalización, intervención o regulación.
+---
+PREGUNTA: ¿Qué es un Sistema de Control?
+A: Grupo de componentes usados en conjunto para lograr un objetivo
+B: Una máquina sin objetivo
+C: Un documento de clase
+D: Una herramienta únicamente manual
+CORRECTA: A
+EXPLICACION: Un sistema de control integra componentes para alcanzar un objetivo deseado.
+---
+PREGUNTA: ¿Qué tipos de componentes pueden formar un Sistema de Control?
+A: Electrónicos, mecánicos, neumáticos e hidráulicos
+B: Solo papeles administrativos
+C: Únicamente tornillos sin función
+D: Solo elementos publicitarios
+CORRECTA: A
+EXPLICACION: Los sistemas de control pueden combinar componentes electrónicos, mecánicos, neumáticos e hidráulicos.
+---
+PREGUNTA: ¿Cuál es uno de los tres elementos esenciales de un Sistema de Control?
+A: Una variable a controlar
+B: Un cartel publicitario
+C: Un archivo de texto
+D: Un color de carcasa
+CORRECTA: A
+EXPLICACION: Un sistema de control debe tener una variable a controlar.
+---
+PREGUNTA: ¿Cuál es otro elemento esencial de un Sistema de Control?
+A: Un actuador
+B: Una factura
+C: Un folleto
+D: Una etiqueta
+CORRECTA: A
+EXPLICACION: El actuador ejecuta la acción necesaria dentro del sistema de control.
+---
+PREGUNTA: ¿Qué es el punto de referencia en un Sistema de Control?
+A: El valor deseado o set point
+B: La marca comercial del equipo
+C: El precio del componente
+D: El nombre del operador
+CORRECTA: A
+EXPLICACION: El punto de referencia o set point indica el valor que se desea alcanzar.
+---
+PREGUNTA: En el ejemplo del tanque de agua, ¿cuál es el punto de referencia?
+A: Qué tan lleno se quiere el tanque
+B: El color del tanque
+C: El tamaño de la bomba únicamente
+D: La marca de la cañería
+CORRECTA: A
+EXPLICACION: En el tanque, el set point indica el nivel de llenado deseado.
+---
+PREGUNTA: En el ejemplo del tanque, ¿qué elemento actúa sobre el agua?
+A: La bomba hidráulica
+B: La lámpara de señalización
+C: El gabinete vacío
+D: El manual de usuario
+CORRECTA: A
+EXPLICACION: La bomba hidráulica permite mover el agua dentro del sistema.
+---
+PREGUNTA: ¿Qué es una señal analógica?
+A: Una señal continua con un margen de variación determinado
+B: Una señal que solo vale 0 o 1
+C: Una señal sin relación con magnitudes físicas
+D: Una señal siempre apagada
+CORRECTA: A
+EXPLICACION: Las señales analógicas son continuas y varían dentro de un rango.
+---
+PREGUNTA: ¿Qué magnitud puede representar una señal analógica?
+A: Temperatura
+B: Estado abierto o cerrado solamente
+C: Bit lógico único
+D: Código binario fijo
+CORRECTA: A
+EXPLICACION: Las señales analógicas suelen representar magnitudes físicas como temperatura, presión o velocidad.
+---
+PREGUNTA: ¿Cuál es un rango típico de tensión analógica mencionado en clase?
+A: 0 a 10 V
+B: 100 a 500 V
+C: Solo 220 V
+D: 0 o 1 V únicamente
+CORRECTA: A
+EXPLICACION: Una señal analógica puede representarse mediante una tensión proporcional de 0 a 10 V.
+---
+PREGUNTA: ¿Cuál es un rango típico de corriente analógica mencionado en clase?
+A: 4 a 20 mA
+B: 0 a 1 A
+C: 220 A
+D: 100 a 500 mA
+CORRECTA: A
+EXPLICACION: Una señal analógica industrial puede representarse con corriente de 4 a 20 mA.
+---
+PREGUNTA: ¿Qué es una señal digital?
+A: Una señal binaria que solo presenta dos estados
+B: Una señal continua infinita
+C: Una señal sin niveles definidos
+D: Una señal mecánica sin electricidad
+CORRECTA: A
+EXPLICACION: Las señales digitales trabajan con dos estados o niveles.
+---
+PREGUNTA: ¿Qué valores puede tomar un bit en sistemas digitales?
+A: 1 o 0
+B: 5 o 10 solamente
+C: 100 o 220
+D: Cualquier valor continuo
+CORRECTA: A
+EXPLICACION: Los bits representan estados lógicos cuyo valor puede ser 1 o 0.
+---
+PREGUNTA: ¿Qué ejemplos representan estados digitales?
+A: Abierto o cerrado
+B: Temperatura variable
+C: Presión continua
+D: Velocidad proporcional
+CORRECTA: A
+EXPLICACION: Las señales digitales expresan estados como abierto/cerrado o conduce/no conduce.
+---
+PREGUNTA: ¿Qué tipo de automatismo trabaja con variables de un solo bit?
+A: Automatismo lógico
+B: Automatismo analógico continuo
+C: Sistema hidráulico puro
+D: Sistema mecánico sin control
+CORRECTA: A
+EXPLICACION: Los automatismos lógicos trabajan con variables de un solo bit.
+---
+PREGUNTA: ¿Qué tipo de automatismo procesa señales de varios bits?
+A: Automatismo digital
+B: Automatismo de un solo bit
+C: Control puramente mecánico
+D: Sistema sin entradas
+CORRECTA: A
+EXPLICACION: Los automatismos digitales procesan señales formadas por varios bits.
+---
+PREGUNTA: ¿Cuál es un objetivo del control de procesos continuos?
+A: Mantener bajo control las variables del proceso
+B: Eliminar todas las variables
+C: Trabajar sin sensores
+D: Evitar la medición
+CORRECTA: A
+EXPLICACION: El control continuo busca mantener controladas variables como temperatura, presión o caudal.
+---
+PREGUNTA: ¿Cuál es un ejemplo de variable en control de procesos continuos?
+A: Presión
+B: Cantidad de piezas solamente
+C: Acabado final únicamente
+D: Número de productos embalados
+CORRECTA: A
+EXPLICACION: En procesos continuos se controlan variables como presión, temperatura, humedad o pH.
+---
+PREGUNTA: ¿Cuál es un ejemplo de variable en control de procesos discretos?
+A: Cantidad de productos
+B: Temperatura continua
+C: Presión proporcional
+D: pH variable
+CORRECTA: A
+EXPLICACION: En procesos discretos se controlan variables como cantidad, acabado o productividad.

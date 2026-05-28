@@ -1,0 +1,167 @@
+TITULO: Simulacro OATec · Integrador 2026
+DESCRIPCION: 20 preguntas integradas de todos los temas del temario
+AREA: General
+DURACION: 20
+CRONOMETRO: desc
+ACTIVO: si
+---
+PREGUNTA: ¿Cuál de las siguientes magnitudes es vectorial?
+A: Energía
+B: Masa
+C: Fuerza
+D: Temperatura
+CORRECTA: C
+EXPLICACION: La fuerza tiene módulo, dirección y sentido.
+---
+PREGUNTA: ¿Qué sucede con la presión en un fluido cuando aumenta la profundidad?
+A: Disminuye
+B: Permanece constante
+C: Aumenta
+D: Se anula
+CORRECTA: C
+EXPLICACION: La presión hidrostática aumenta con la profundidad.
+---
+PREGUNTA: Según la Ley de Ohm, la corriente eléctrica es:
+A: V/R
+B: R/V
+C: V·R
+D: R²
+CORRECTA: A
+EXPLICACION: I = V/R.
+---
+PREGUNTA: ¿Cuál es una fuente de energía renovable?
+A: Carbón
+B: Petróleo
+C: Solar
+D: Gas natural
+CORRECTA: C
+EXPLICACION: Proviene del sol y es inagotable a escala humana.
+---
+PREGUNTA: ¿Qué partícula tiene carga negativa?
+A: Protón
+B: Electrón
+C: Neutrón
+D: Núcleo
+CORRECTA: B
+EXPLICACION: El electrón posee carga negativa.
+---
+PREGUNTA: ¿Qué tipo de enlace mantiene unidas las bases del ADN?
+A: Iónico
+B: Covalente
+C: Puente de hidrógeno
+D: Metálico
+CORRECTA: C
+EXPLICACION: Las bases se unen mediante puentes de hidrógeno.
+---
+PREGUNTA: ¿Cuál es la unidad funcional de los seres vivos?
+A: Átomo
+B: Molécula
+C: Célula
+D: Tejido
+CORRECTA: C
+EXPLICACION: La célula es la unidad básica de la vida.
+---
+PREGUNTA: ¿Qué proceso convierte ADN en ARN?
+A: Traducción
+B: Replicación
+C: Transcripción
+D: Mutación
+CORRECTA: C
+EXPLICACION: La transcripción genera ARN a partir de ADN.
+---
+PREGUNTA: ¿Cuál de los siguientes gases contribuye al efecto invernadero?
+A: Oxígeno
+B: Nitrógeno
+C: CO2
+D: Helio
+CORRECTA: C
+EXPLICACION: El dióxido de carbono es un gas de efecto invernadero.
+---
+PREGUNTA: ¿Qué indica el pH de una solución?
+A: Temperatura
+B: Acidez o basicidad
+C: Densidad
+D: Presión
+CORRECTA: B
+EXPLICACION: El pH mide acidez o alcalinidad.
+---
+PREGUNTA: ¿Qué ocurre cuando aumenta la temperatura en una reacción química?
+A: Disminuye la velocidad
+B: Aumenta la velocidad
+C: No cambia
+D: Se detiene
+CORRECTA: B
+EXPLICACION: Mayor temperatura implica mayor energía cinética promedio.
+---
+PREGUNTA: ¿Cuál es un ejemplo de mezcla?
+A: Agua pura
+B: Oxígeno
+C: Aire
+D: Oro
+CORRECTA: C
+EXPLICACION: El aire es una mezcla de gases.
+---
+PREGUNTA: ¿Qué ley describe la acción y reacción?
+A: Primera de Newton
+B: Segunda de Newton
+C: Tercera de Newton
+D: Ley de Ohm
+CORRECTA: C
+EXPLICACION: A toda acción corresponde una reacción igual y opuesta.
+---
+PREGUNTA: ¿Qué tipo de célula no tiene núcleo definido?
+A: Eucariota
+B: Animal
+C: Vegetal
+D: Procariota
+CORRECTA: D
+EXPLICACION: Las células procariotas carecen de núcleo definido.
+---
+PREGUNTA: ¿Qué proceso forma glucosa en las plantas?
+A: Respiración
+B: Fotosíntesis
+C: Digestión
+D: Fermentación
+CORRECTA: B
+EXPLICACION: La fotosíntesis produce glucosa a partir de dióxido de carbono y agua.
+---
+PREGUNTA: ¿Qué propiedad describe la resistencia al flujo de un fluido?
+A: Densidad
+B: Presión
+C: Viscosidad
+D: Temperatura
+CORRECTA: C
+EXPLICACION: La viscosidad mide la resistencia de un fluido a fluir.
+---
+PREGUNTA: ¿Cuál es la fórmula química del agua?
+A: CO2
+B: H2O
+C: NaCl
+D: O2
+CORRECTA: B
+EXPLICACION: El agua está formada por dos átomos de hidrógeno y uno de oxígeno.
+---
+PREGUNTA: ¿Qué ciclo involucra el intercambio de carbono en la biosfera?
+A: Ciclo del agua
+B: Ciclo del carbono
+C: Ciclo del nitrógeno
+D: Ciclo del fósforo
+CORRECTA: B
+EXPLICACION: El ciclo del carbono regula el intercambio de carbono en el planeta.
+---
+PREGUNTA: ¿Qué instrumento mide la corriente eléctrica?
+A: Voltímetro
+B: Amperímetro
+C: Termómetro
+D: Barómetro
+CORRECTA: B
+EXPLICACION: El amperímetro mide la intensidad de corriente eléctrica.
+---
+PREGUNTA: ¿Qué acción ayuda a reducir la huella de carbono?
+A: Usar más combustibles fósiles
+B: Reducir el consumo energético
+C: Aumentar residuos
+D: Usar más plásticos descartables
+CORRECTA: B
+EXPLICACION: Reducir el consumo energético disminuye las emisiones asociadas.
+---

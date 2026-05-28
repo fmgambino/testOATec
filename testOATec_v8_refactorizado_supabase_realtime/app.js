@@ -176,12 +176,6 @@ const el = {
   adminRankingBody: document.getElementById("adminRankingBody"),
   adminAttemptsBody: document.getElementById("adminAttemptsBody"),
   adminStatusNote: document.getElementById("adminStatusNote"),
-  saveProgressOverlay: document.getElementById("saveProgressOverlay"),
-  saveProgressTitle: document.getElementById("saveProgressTitle"),
-  saveProgressText: document.getElementById("saveProgressText"),
-  saveProgressBar: document.getElementById("saveProgressBar"),
-  saveProgressPercent: document.getElementById("saveProgressPercent"),
-  saveProgressCounter: document.getElementById("saveProgressCounter"),
   toast: document.getElementById("toast")
 };
 
@@ -259,7 +253,7 @@ function scheduleRealtimeRefresh() {
       showView("admin");
     }
     showToast("Datos sincronizados en tiempo real.");
-  }, 120);
+  }, 350);
 }
 
 function setupRealtime() {
@@ -326,24 +320,9 @@ async function loginAdminWithSupabase(username, password) {
 }
 
 async function logoutAdminSession() {
-  if (realtimeChannel && supabaseClient) {
-    try { await supabaseClient.removeChannel(realtimeChannel); } catch (_) {}
-    realtimeChannel = null;
-  }
-
   if (supabaseClient) {
-    const signOutPromise = supabaseClient.auth.signOut({ scope: "local" });
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Tiempo de espera agotado al cerrar sesión. Revisá la conexión y probá nuevamente.")), 8000)
-    );
-    const { error } = await Promise.race([signOutPromise, timeoutPromise]);
-    if (error) throw new Error(getSupabaseErrorMessage(error));
+    await supabaseClient.auth.signOut();
   }
-
-  try {
-    localStorage.removeItem("sb-" + String(APP_CONFIG.url || "").split("//")[1]?.split(".")[0] + "-auth-token");
-  } catch (_) {}
-
   state.adminAuthenticated = false;
   state.adminProfile = null;
 }
@@ -368,17 +347,6 @@ function hasSweetAlert() {
   return typeof window.Swal !== "undefined";
 }
 
-function getSwalThemeOptions() {
-  return {
-    background: document.body.classList.contains("light") ? "#ffffff" : "#0f1b35",
-    color: document.body.classList.contains("light") ? "#13203d" : "#eef2fb",
-    confirmButtonColor: "#6f7cff",
-    cancelButtonColor: "#64748b",
-    denyButtonColor: "#0ea5e9",
-    scrollbarPadding: false
-  };
-}
-
 async function showAlert({ icon = "info", title = "", text = "", html = "", confirmButtonText = "Aceptar" }) {
   if (hasSweetAlert()) {
     return window.Swal.fire({
@@ -387,62 +355,16 @@ async function showAlert({ icon = "info", title = "", text = "", html = "", conf
       text,
       html,
       confirmButtonText,
-      ...getSwalThemeOptions()
+      background: document.body.classList.contains("light") ? "#ffffff" : "#0f1b35",
+      color: document.body.classList.contains("light") ? "#13203d" : "#eef2fb",
+      confirmButtonColor: "#6f7cff",
+      scrollbarPadding: false
     });
   }
   showToast(text || title || "Operación completada.");
-  return Promise.resolve({ isConfirmed: true });
+  return Promise.resolve();
 }
 
-async function showConfirm({ icon = "question", title = "", text = "", html = "", confirmButtonText = "Aceptar", cancelButtonText = "Cancelar", danger = false }) {
-  if (hasSweetAlert()) {
-    return window.Swal.fire({
-      icon,
-      title,
-      text,
-      html,
-      showCancelButton: true,
-      reverseButtons: true,
-      confirmButtonText,
-      cancelButtonText,
-      ...getSwalThemeOptions(),
-      confirmButtonColor: danger ? "#ef4444" : "#6f7cff",
-      cancelButtonColor: "#64748b"
-    });
-  }
-  return Promise.resolve({ isConfirmed: window.confirm(text || title || "¿Confirmar acción?") });
-}
-
-
-
-function clampProgress(value) {
-  return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-}
-
-function openSaveProgress(totalQuestions = 0) {
-  if (!el.saveProgressOverlay) return;
-  el.saveProgressOverlay.classList.remove("hidden");
-  updateSaveProgress({
-    percent: 0,
-    uploaded: 0,
-    total: totalQuestions,
-    text: "Preparando el test y validando preguntas..."
-  });
-}
-
-function updateSaveProgress({ percent = 0, uploaded = 0, total = 0, text = "" } = {}) {
-  if (!el.saveProgressOverlay) return;
-  const safePercent = clampProgress(percent);
-  if (el.saveProgressBar) el.saveProgressBar.style.width = `${safePercent}%`;
-  if (el.saveProgressPercent) el.saveProgressPercent.textContent = `${safePercent}%`;
-  if (el.saveProgressCounter) el.saveProgressCounter.textContent = `${uploaded}/${total} preguntas`;
-  if (el.saveProgressText && text) el.saveProgressText.textContent = text;
-}
-
-function closeSaveProgress() {
-  if (!el.saveProgressOverlay) return;
-  el.saveProgressOverlay.classList.add("hidden");
-}
 
 function getSupabaseErrorMessage(error) {
   if (!error) return "Error desconocido de Supabase.";
@@ -1064,236 +986,20 @@ function renderResult() {
   ].map(([label, value]) => `<div class="result-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
 }
 
-function downloadTextFile(filename, content, mime = "text/plain;charset=utf-8;") {
-  const blob = new Blob([content], { type: mime });
+function exportAttemptsCsv() {
+  const headers = ["fecha","test","apellido","nombre","dni","edad","curso","division","correctas","total","porcentaje","tiempo_segundos","cronometro","aprobado"];
+  const rows = state.attempts.map((item) => [
+    item.created_at, item.test_title, item.last_name, item.first_name, item.dni, item.age, item.course, item.division,
+    item.correct_answers, item.total_questions, item.score_percentage, item.duration_seconds, item.timer_mode || "desc", item.approved ? "SI" : "NO"
+  ]);
+  const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename;
+  a.download = "ranking_oatec.csv";
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function getExportSectionsFromForm() {
-  return {
-    tests: document.getElementById("exportTestsCheck")?.checked ?? true,
-    questions: document.getElementById("exportQuestionsCheck")?.checked ?? true,
-    attempts: document.getElementById("exportAttemptsCheck")?.checked ?? true,
-    ranking: document.getElementById("exportRankingCheck")?.checked ?? true
-  };
-}
-
-function getAllQuestionsForExport() {
-  return state.tests.flatMap((test) => (test.questions || []).map((question, index) => ({
-    test_title: test.title,
-    area: test.area || "",
-    position: question.position || index + 1,
-    prompt: question.prompt,
-    option_a: question.option_a,
-    option_b: question.option_b,
-    option_c: question.option_c,
-    option_d: question.option_d,
-    correct_option: question.correct_option,
-    explanation: question.explanation || ""
-  })));
-}
-
-function getRankingRowsForExport() {
-  return state.tests.flatMap((test) => getAttemptRankings(test.id).map((item, index) => ({
-    ranking: index + 1,
-    test: test.title,
-    alumno: `${item.last_name}, ${item.first_name}`,
-    curso: `${item.course || ""} ${item.division || ""}`.trim(),
-    puntaje: `${item.correct_answers}/${item.total_questions}`,
-    porcentaje: `${Math.round(Number(item.score_percentage) || 0)}%`,
-    tiempo: formatSeconds(item.duration_seconds),
-    fecha: formatDateTime(item.created_at)
-  })));
-}
-
-function buildSelectedCsv(sections) {
-  const parts = [];
-  if (sections.tests) {
-    parts.push("CUESTIONARIOS");
-    parts.push(["titulo","descripcion","area","duracion_min","cronometro","activo","preguntas","fecha_creacion"].map(csvEscape).join(","));
-    state.tests.forEach((test) => parts.push([
-      test.title, test.description || "", test.area || "", test.time_limit_minutes, test.timer_mode, test.is_active ? "SI" : "NO", (test.questions || []).length, test.created_at || ""
-    ].map(csvEscape).join(",")));
-    parts.push("");
-  }
-  if (sections.questions) {
-    parts.push("PREGUNTAS");
-    parts.push(["test","area","posicion","pregunta","opcion_a","opcion_b","opcion_c","opcion_d","correcta","explicacion"].map(csvEscape).join(","));
-    getAllQuestionsForExport().forEach((q) => parts.push([
-      q.test_title, q.area, q.position, q.prompt, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option, q.explanation
-    ].map(csvEscape).join(",")));
-    parts.push("");
-  }
-  if (sections.attempts) {
-    parts.push("RESULTADOS DE TEST");
-    parts.push(["fecha","test","apellido","nombre","dni","edad","curso","division","correctas","total","porcentaje","tiempo_segundos","cronometro","aprobado"].map(csvEscape).join(","));
-    state.attempts.forEach((item) => parts.push([
-      item.created_at, item.test_title, item.last_name, item.first_name, item.dni, item.age, item.course, item.division,
-      item.correct_answers, item.total_questions, item.score_percentage, item.duration_seconds, item.timer_mode || "desc", item.approved ? "SI" : "NO"
-    ].map(csvEscape).join(",")));
-    parts.push("");
-  }
-  if (sections.ranking) {
-    parts.push("CUADRO DE RANKING");
-    parts.push(["ranking","test","alumno","curso","puntaje","porcentaje","tiempo","fecha"].map(csvEscape).join(","));
-    getRankingRowsForExport().forEach((item) => parts.push([
-      item.ranking, item.test, item.alumno, item.curso, item.puntaje, item.porcentaje, item.tiempo, item.fecha
-    ].map(csvEscape).join(",")));
-  }
-  return parts.join("\n");
-}
-
-function exportAttemptsCsv(sections = { tests: false, questions: false, attempts: true, ranking: true }) {
-  downloadTextFile("reporte_oatec.csv", buildSelectedCsv(sections), "text/csv;charset=utf-8;");
-}
-
-const OATEC_LOGO_DATA_URL = "data:image/png;base64,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";
-
-async function imageUrlToDataUrl(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
-      } catch (_) {
-        resolve(null);
-      }
-    };
-    img.onerror = () => resolve(null);
-    img.src = url;
-  });
-}
-
-function pdfAddSection(doc, title, head, body) {
-  if (!body.length) return;
-  const startY = (doc.lastAutoTable?.finalY || 42) + 12;
-  if (startY > 260) doc.addPage();
-  const y = doc.lastAutoTable?.finalY ? (doc.lastAutoTable.finalY + 12) : 52;
-  doc.setFontSize(13);
-  doc.setTextColor(20, 35, 70);
-  doc.text(title, 14, y);
-  doc.autoTable({
-    head: [head],
-    body,
-    startY: y + 5,
-    styles: { fontSize: 7, cellPadding: 2, overflow: "linebreak" },
-    headStyles: { fillColor: [35, 55, 110], textColor: [255, 255, 255] },
-    alternateRowStyles: { fillColor: [245, 247, 252] },
-    margin: { left: 14, right: 14, top: 45, bottom: 25 }
-  });
-}
-
-async function exportSelectedPdf(sections) {
-  if (!window.jspdf?.jsPDF) {
-    await showAlert({ icon: "error", title: "No se pudo exportar PDF", text: "No se cargó la librería jsPDF. Revisá la conexión a internet." });
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const logoData = OATEC_LOGO_DATA_URL;
-
-  function addHeader() {
-    try { doc.addImage(logoData, "PNG", 14, 8, 22, 22); } catch (_) {}
-    doc.setFontSize(18);
-    doc.setTextColor(20, 35, 70);
-    doc.text("Instituto San Miguel · OATec ITBA 2026", 42, 15);
-    doc.setFontSize(13);
-    doc.text("Reporte General", 42, 23);
-    doc.setFontSize(9);
-    doc.setTextColor(80, 90, 110);
-    doc.text(`Fecha y hora: ${new Date().toLocaleString("es-AR")}`, 42, 30);
-    doc.text("Generado desde el panel administrador", 42, 35);
-    doc.setDrawColor(210, 220, 235);
-    doc.line(14, 40, pageWidth - 14, 40);
-  }
-
-  addHeader();
-
-  if (sections.tests) {
-    pdfAddSection(doc, "Cuestionarios", ["Título", "Área", "Duración", "Timer", "Activo", "Preguntas"], state.tests.map((test) => [
-      test.title, test.area || "", `${test.time_limit_minutes} min`, test.timer_mode === "asc" ? "Asc." : "Desc.", test.is_active ? "Sí" : "No", String((test.questions || []).length)
-    ]));
-  }
-  if (sections.questions) {
-    pdfAddSection(doc, "Preguntas", ["Test", "#", "Pregunta", "A", "B", "C", "D", "Correcta"], getAllQuestionsForExport().map((q) => [
-      q.test_title, String(q.position), q.prompt, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option
-    ]));
-  }
-  if (sections.attempts) {
-    pdfAddSection(doc, "Resultado de Test", ["Fecha", "Alumno", "DNI", "Curso", "Test", "Puntaje", "%", "Tiempo"], state.attempts.map((item) => [
-      formatDateTime(item.created_at), `${item.last_name}, ${item.first_name}`, item.dni || "", `${item.course || ""} ${item.division || ""}`.trim(), item.test_title, `${item.correct_answers}/${item.total_questions}`, `${Math.round(Number(item.score_percentage) || 0)}%`, formatSeconds(item.duration_seconds)
-    ]));
-  }
-  if (sections.ranking) {
-    pdfAddSection(doc, "Cuadro de Ranking", ["#", "Test", "Alumno", "Curso", "Puntaje", "%", "Tiempo", "Fecha"], getRankingRowsForExport().map((item) => [
-      String(item.ranking), item.test, item.alumno, item.curso, item.puntaje, item.porcentaje, item.tiempo, item.fecha
-    ]));
-  }
-
-  const pageCount = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i += 1) {
-    doc.setPage(i);
-    if (i > 1) addHeader();
-    doc.setDrawColor(210, 220, 235);
-    doc.line(14, pageHeight - 18, pageWidth - 14, pageHeight - 18);
-    doc.setFontSize(8);
-    doc.setTextColor(90, 100, 120);
-    doc.text("SIMULADOR OATec © 2026 Tucumán - Argentina", 14, pageHeight - 12);
-    doc.text("by Ing. Fernando Gambino · Todos los Derechos Registrados", 14, pageHeight - 7);
-    doc.text(`Página ${i} de ${pageCount}`, pageWidth - 38, pageHeight - 7);
-  }
-  doc.save("reporte_oatec.pdf");
-}
-
-async function openExportDialog() {
-  const result = await window.Swal.fire({
-    title: "Exportar datos",
-    html: `
-      <div class="export-options">
-        <label><input type="checkbox" id="exportTestsCheck" checked> Cuestionarios</label>
-        <label><input type="checkbox" id="exportQuestionsCheck" checked> Preguntas</label>
-        <label><input type="checkbox" id="exportAttemptsCheck" checked> Resultado de Test</label>
-        <label><input type="checkbox" id="exportRankingCheck" checked> Cuadro de Ranking</label>
-      </div>
-      <p style="margin-top:12px;color:#9ea8c0;font-size:13px;">Elegí los datos y luego el formato de descarga.</p>
-    `,
-    icon: "info",
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonText: "Exportar PDF",
-    denyButtonText: "Exportar CSV",
-    cancelButtonText: "Cancelar",
-    didOpen: () => {
-      const popup = window.Swal.getPopup();
-      popup.querySelectorAll(".export-options label").forEach((label) => {
-        label.style.display = "block";
-        label.style.textAlign = "left";
-        label.style.margin = "8px 0";
-      });
-    },
-    ...getSwalThemeOptions()
-  });
-  if (result.isDismissed) return;
-  const sections = getExportSectionsFromForm();
-  if (!Object.values(sections).some(Boolean)) {
-    await showAlert({ icon: "warning", title: "Sin datos seleccionados", text: "Seleccioná al menos una sección para exportar." });
-    return;
-  }
-  if (result.isConfirmed) await exportSelectedPdf(sections);
-  if (result.isDenied) exportAttemptsCsv(sections);
 }
 
 function parseBooleanText(value) {
@@ -1423,19 +1129,11 @@ async function renderAdmin() {
   document.querySelectorAll("[data-delete-test]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.deleteTest;
-      const confirmDelete = await showConfirm({
-        icon: "warning",
-        title: "Eliminar test",
-        text: "Se eliminará el test, sus preguntas y sus resultados. Esta acción no se puede deshacer.",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
-        danger: true
-      });
-      if (!confirmDelete.isConfirmed) return;
+      if (!confirm("¿Eliminar test y sus resultados?")) return;
       await dataLayer.deleteTest(id);
       await bootstrap();
       if (state.adminAuthenticated) showView("admin");
-      await showAlert({ icon: "success", title: "Test eliminado", text: "El test y sus datos asociados fueron eliminados." });
+      showToast("Test eliminado.");
     });
   });
 
@@ -1466,19 +1164,11 @@ async function renderAdmin() {
 
   document.querySelectorAll("[data-delete-attempt]").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const confirmDelete = await showConfirm({
-        icon: "warning",
-        title: "Eliminar intento",
-        text: "Se eliminará este resultado del ranking.",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
-        danger: true
-      });
-      if (!confirmDelete.isConfirmed) return;
+      if (!confirm("¿Eliminar intento?")) return;
       await dataLayer.deleteAttempt(btn.dataset.deleteAttempt);
       await bootstrap();
       if (state.adminAuthenticated) showView("admin");
-      await showAlert({ icon: "success", title: "Intento eliminado", text: "El resultado fue eliminado correctamente." });
+      showToast("Intento eliminado.");
     });
   });
 }
@@ -1505,26 +1195,31 @@ const dataLayer = (() => {
   if (supabaseClient) {
     return {
       async loadAll() {
-        const attemptsSource = state.adminAuthenticated ? "attempts" : "v_public_attempts";
-        const [testsResponse, questionsResponse, attemptsResponse] = await Promise.all([
-          supabaseClient.from("tests").select("*").order("created_at", { ascending: false }),
-          supabaseClient.from("questions").select("*").order("position", { ascending: true }),
-          supabaseClient.from(attemptsSource).select("*").order("created_at", { ascending: false })
-        ]);
+        const testsResponse = await supabaseClient
+          .from("tests")
+          .select("*")
+          .order("created_at", { ascending: false });
 
         if (testsResponse.error) throw new Error(getSupabaseErrorMessage(testsResponse.error));
-        if (questionsResponse.error) throw new Error(getSupabaseErrorMessage(questionsResponse.error));
-        if (attemptsResponse.error) throw new Error(getSupabaseErrorMessage(attemptsResponse.error));
 
-        const questionsByTest = new Map();
-        (questionsResponse.data || []).forEach((question) => {
-          if (!questionsByTest.has(question.test_id)) questionsByTest.set(question.test_id, []);
-          questionsByTest.get(question.test_id).push(question);
-        });
+        const questionsResponse = await supabaseClient
+          .from("questions")
+          .select("*")
+          .order("position", { ascending: true });
+
+        if (questionsResponse.error) throw new Error(getSupabaseErrorMessage(questionsResponse.error));
+
+        const attemptsSource = state.adminAuthenticated ? "attempts" : "v_public_attempts";
+        const attemptsResponse = await supabaseClient
+          .from(attemptsSource)
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (attemptsResponse.error) throw new Error(getSupabaseErrorMessage(attemptsResponse.error));
 
         const merged = (testsResponse.data || []).map((test) => ({
           ...test,
-          questions: questionsByTest.get(test.id) || []
+          questions: (questionsResponse.data || []).filter((q) => q.test_id === test.id)
         }));
 
         return {
@@ -1536,7 +1231,7 @@ const dataLayer = (() => {
         const { error } = await supabaseClient.from("attempts").insert(payload);
         if (error) throw new Error(getSupabaseErrorMessage(error));
       },
-      async createTest(test, questions, onProgress = null) {
+      async createTest(test, questions) {
         const cleanTest = stripGeneratedTestFields(test);
         const cleanQuestions = questions
           .map((q, index) => ({
@@ -1555,8 +1250,6 @@ const dataLayer = (() => {
         if (!cleanTest.title) throw new Error("El título del test es obligatorio.");
         if (!cleanQuestions.length) throw new Error("No hay preguntas válidas para guardar.");
 
-        onProgress?.({ stage: "test", uploaded: 0, total: cleanQuestions.length, percent: 5, text: "Creando el test en Supabase..." });
-
         const { data: inserted, error } = await supabaseClient
           .from("tests")
           .insert(cleanTest)
@@ -1571,32 +1264,15 @@ const dataLayer = (() => {
           test_id: inserted.id
         }));
 
-        const chunkSize = 10;
-        let uploaded = 0;
+        const { error: questionError } = await supabaseClient
+          .from("questions")
+          .insert(withTest);
 
-        for (let start = 0; start < withTest.length; start += chunkSize) {
-          const chunk = withTest.slice(start, start + chunkSize);
-          const { error: questionError } = await supabaseClient
-            .from("questions")
-            .insert(chunk);
-
-          if (questionError) {
-            await supabaseClient.from("tests").delete().eq("id", inserted.id);
-            throw new Error(getSupabaseErrorMessage(questionError));
-          }
-
-          uploaded += chunk.length;
-          const percent = 10 + Math.round((uploaded / withTest.length) * 85);
-          onProgress?.({
-            stage: "questions",
-            uploaded,
-            total: withTest.length,
-            percent,
-            text: `Subiendo preguntas a Supabase: ${uploaded} de ${withTest.length}...`
-          });
+        if (questionError) {
+          await supabaseClient.from("tests").delete().eq("id", inserted.id);
+          throw new Error(getSupabaseErrorMessage(questionError));
         }
 
-        onProgress?.({ stage: "done", uploaded, total: withTest.length, percent: 100, text: "Carga finalizada correctamente." });
         return inserted;
       },
       async deleteAttempt(id) {
@@ -1604,10 +1280,6 @@ const dataLayer = (() => {
         if (error) throw new Error(getSupabaseErrorMessage(error));
       },
       async deleteTest(id) {
-        const { error: attemptsError } = await supabaseClient.from("attempts").delete().eq("test_id", id);
-        if (attemptsError) throw new Error(getSupabaseErrorMessage(attemptsError));
-        const { error: questionsError } = await supabaseClient.from("questions").delete().eq("test_id", id);
-        if (questionsError) throw new Error(getSupabaseErrorMessage(questionsError));
         const { error } = await supabaseClient.from("tests").delete().eq("id", id);
         if (error) throw new Error(getSupabaseErrorMessage(error));
       }
@@ -1621,9 +1293,8 @@ const dataLayer = (() => {
       local.attempts.push(payload);
       saveLocalData(local.tests, local.attempts);
     },
-    async createTest(test, questions, onProgress = null) {
+    async createTest(test, questions) {
       const local = loadLocalData();
-      onProgress?.({ stage: "local", uploaded: questions.length, total: questions.length, percent: 100, text: "Guardado en modo local." });
       local.tests.unshift({
         ...test,
         id: crypto.randomUUID(),
@@ -1702,15 +1373,12 @@ function bindEvents() {
 
   document.getElementById("cancelTestBtn").addEventListener("click", async () => {
     if (!state.currentTest) return showView("home");
-    const result = await showConfirm({
+    const result = await showAlert({
       icon: "warning",
       title: "Cancelar intento",
       text: "Si cancelás, este intento no se guardará. ¿Querés volver al inicio?",
-      confirmButtonText: "Volver al inicio",
-      cancelButtonText: "Continuar test",
-      danger: true
+      confirmButtonText: "Volver al inicio"
     });
-    if (!result.isConfirmed) return;
     clearInterval(state.timerId);
     state.currentTest = null;
     state.answers = {};
@@ -1751,37 +1419,10 @@ el.adminLoginForm.addEventListener("submit", async (event) => {
 });
 
 document.getElementById("adminLogoutBtn").addEventListener("click", async () => {
-  const confirmLogout = await showConfirm({
-    icon: "question",
-    title: "Cerrar sesión",
-    text: "¿Deseás salir del panel administrador?",
-    confirmButtonText: "Cerrar sesión",
-    cancelButtonText: "Cancelar",
-    danger: true
-  });
-  if (!confirmLogout.isConfirmed) return;
-
-  const logoutBtn = document.getElementById("adminLogoutBtn");
-  try {
-    if (logoutBtn) {
-      logoutBtn.disabled = true;
-      logoutBtn.textContent = "Cerrando...";
-    }
-    await logoutAdminSession();
-    el.adminLoginOverlay?.classList.add("hidden");
-    showView("home");
-    renderTopStats();
-    renderTestSelect();
-    await showAlert({ icon: "success", title: "Sesión cerrada", text: "Volviste a la pantalla principal." });
-  } catch (error) {
-    console.error(error);
-    await showAlert({ icon: "error", title: "No se pudo cerrar sesión", text: error.message || "Intentá nuevamente." });
-  } finally {
-    if (logoutBtn) {
-      logoutBtn.disabled = false;
-      logoutBtn.textContent = "Cerrar sesión";
-    }
-  }
+  await logoutAdminSession();
+  await bootstrap(true);
+  showView("home");
+  showToast("Sesión cerrada.");
 });
 
   document.getElementById("adminRefreshBtn").addEventListener("click", async () => {
@@ -1790,7 +1431,7 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
     showToast("Panel actualizado.");
   });
 
-  document.getElementById("exportAttemptsBtn").addEventListener("click", openExportDialog);
+  document.getElementById("exportAttemptsBtn").addEventListener("click", exportAttemptsCsv);
   el.adminRankingTestSelect.addEventListener("change", renderAdminRanking);
 
   el.downloadTxtExampleBtn.addEventListener("click", downloadExampleTxt);
@@ -1846,25 +1487,7 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
         is_active: el.testActive.value === "true"
       };
 
-      const confirmSave = await showConfirm({
-        icon: "question",
-        title: "Guardar test",
-        html: `<div style="text-align:left">
-          <p><strong>Título:</strong> ${escapeHtml(test.title)}</p>
-          <p><strong>Área:</strong> ${escapeHtml(test.area || "General")}</p>
-          <p><strong>Preguntas:</strong> ${questions.length}</p>
-          <p style="margin-top:10px;color:#9ea8c0;">Se cargará el cuestionario y sus preguntas en Supabase.</p>
-        </div>`,
-        confirmButtonText: "Sí, guardar",
-        cancelButtonText: "Cancelar"
-      });
-      if (!confirmSave.isConfirmed) return;
-
-      openSaveProgress(questions.length);
-      await dataLayer.createTest(test, questions, ({ percent, uploaded, total, text }) => {
-        updateSaveProgress({ percent, uploaded, total, text });
-      });
-      updateSaveProgress({ percent: 100, uploaded: questions.length, total: questions.length, text: "Sincronizando panel y listado de tests..." });
+      await dataLayer.createTest(test, questions);
       el.createTestForm.reset();
       el.questionsJson.value = "";
       el.testTimerMode.value = "desc";
@@ -1872,14 +1495,11 @@ document.getElementById("adminLogoutBtn").addEventListener("click", async () => 
       el.txtImportInput.value = "";
       await bootstrap();
       showView("admin");
-      closeSaveProgress();
       await showAlert({ icon: "success", title: "Test creado correctamente", text: `Se guardaron ${questions.length} preguntas en Supabase.` });
     } catch (error) {
       console.error("No se pudo crear el test:", error);
-      closeSaveProgress();
       await showAlert({ icon: "error", title: "No se pudo crear el test", text: error.message || "Revisá el contenido e intentá nuevamente." });
     } finally {
-      closeSaveProgress();
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = "Guardar test";

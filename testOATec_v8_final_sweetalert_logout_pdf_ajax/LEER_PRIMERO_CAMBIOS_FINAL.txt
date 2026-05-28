@@ -1,0 +1,16 @@
+ACTUALIZACION FINAL - OATec v8
+
+Cambios incluidos:
+1) Todas las confirmaciones relevantes usan SweetAlert2.
+2) Cerrar sesión ahora confirma con SweetAlert2, ejecuta signOut local de Supabase, limpia estado admin y vuelve a la pantalla principal sin recargar todo.
+3) Exportar datos permite seleccionar con checkbox: Cuestionarios, Preguntas, Resultado de Test y Cuadro de Ranking.
+4) Exportación PDF con membrete, logo embebido localmente, título, fecha/hora y footer:
+   SIMULADOR OATec © 2026 Tucumán - Argentina
+   by Ing. Fernando Gambino · Todos los Derechos Registrados
+5) Se reemplazó el logo remoto por assets/oatec-logo.png para evitar errores CORS en localhost y en PDF.
+6) Cargas/actualizaciones optimizadas: consultas Supabase en paralelo y Realtime con debounce más corto.
+
+IMPORTANTE:
+- Subir todos los archivos reemplazando el proyecto anterior.
+- Si usás Supabase Realtime, ejecutar el SQL de db/patch_realtime_guardar_tests.sql si aún no fue aplicado.
+- El error de consola "A listener indicated an asynchronous response..." suele venir de extensiones del navegador. Probá en incógnito si persiste.
